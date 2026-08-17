@@ -1,0 +1,244 @@
+html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>加密页面</title>
+    <script>
+        // 密码已设为 12345678
+        var PASSWORD = '12345678';
+
+        function checkPassword() {
+            var userInput = prompt('请输入访问密码：');
+            if (userInput !== PASSWORD) {
+                alert('密码错误！页面无法访问。');
+                window.location.href = 'about:blank';  // 错误则跳转空白页
+            }
+        }
+        window.onload = checkPassword;
+    </script>
+</head>
+<body>
+    <h1>这里是受保护的内容</h1>
+    <p>只有输入正确密码才能看到我。</p>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>压降与流量计算</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+    background: #f0f2f5;
+    padding: 30px 15px;
+    color: #333;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+  h1 {
+    text-align: center;
+    padding: 20px;
+    font-size: 22px;
+    color: #2c3e50;
+    border-bottom: 3px solid #27ae60;
+  }
+  .section {
+    padding: 20px 30px;
+  }
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    display: inline-block;
+  }
+  .section-pressure .section-title { background: #e67e22; }
+  .section-flow .section-title { background: #2980b9; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+  .label {
+    flex: 1;
+    font-size: 14px;
+    color: #555;
+  }
+  .input-box {
+    width: 130px;
+    padding: 7px 10px;
+    font-size: 14px;
+    text-align: center;
+    border: 2px solid #27ae60;
+    border-radius: 6px;
+    background: #eafaf1;
+    color: #1e8449;
+    font-weight: 600;
+    outline: none;
+    transition: all .2s;
+  }
+  .input-box:focus {
+    border-color: #2ecc71;
+    box-shadow: 0 0 6px rgba(39,174,96,.4);
+    background: #d5f5e3;
+  }
+  .unit {
+    font-size: 13px;
+    color: #999;
+    width: 56px;
+  }
+  .result {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: #fff3e0;
+    border-left: 4px solid #e67e22;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .result-flow {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: #e8f4fd;
+    border-left: 4px solid #2980b9;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .result .val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e67e22;
+  }
+  .result-flow .val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2980b9;
+  }
+  .footer {
+    text-align: center;
+    padding: 12px;
+    font-size: 12px;
+    color: #aaa;
+    border-top: 1px solid #eee;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>压降与流量计算</h1>
+
+  <!-- 压降计算 -->
+  <div class="section section-pressure">
+    <div class="section-title">压降计算公式</div>
+    <div class="row">
+      <span class="label">容积流量</span>
+      <input type="number" class="input-box" id="volFlow" value="20" step="any">
+      <span class="unit">m³/min</span>
+    </div>
+    <div class="row">
+      <span class="label">管路长度</span>
+      <input type="number" class="input-box" id="pipeLen" value="500" step="any">
+      <span class="unit">m</span>
+    </div>
+    <div class="row">
+      <span class="label">管道内径</span>
+      <input type="number" class="input-box" id="pipeDia" value="50" step="any">
+      <span class="unit">mm</span>
+    </div>
+    <div class="row">
+      <span class="label">排气压力（绝压）</span>
+      <input type="number" class="input-box" id="dischargeP" value="8" step="any">
+      <span class="unit">bar</span>
+    </div>
+    <div class="result">
+      压力降：<span class="val" id="pressureDrop">0.02297</span> bar
+    </div>
+  </div>
+
+  <!-- 流量计算 -->
+  <div class="section section-flow">
+    <div class="section-title">流量计算</div>
+    <div class="row">
+      <span class="label">管道半径</span>
+      <input type="number" class="input-box" id="pipeR" value="0.2" step="any">
+      <span class="unit">m</span>
+    </div>
+    <div class="row">
+      <span class="label">管道流速</span>
+      <input type="number" class="input-box" id="pipeV" value="20" step="any">
+      <span class="unit">m/s</span>
+    </div>
+    <div class="row">
+      <span class="label">气体压力</span>
+      <input type="number" class="input-box" id="gasP" value="0.8" step="any">
+      <span class="unit">MPa</span>
+    </div>
+    <div class="row">
+      <span class="label">绝对温度</span>
+      <input type="number" class="input-box" id="absT" value="273.15" step="any">
+      <span class="unit">℃</span>
+    </div>
+    <div class="row">
+      <span class="label">实际温度</span>
+      <input type="number" class="input-box" id="realT" value="60" step="any">
+      <span class="unit">℃</span>
+    </div>
+    <div class="result-flow">
+      管道流量：<span class="val" id="pipeFlow">19.89</span> m³/min
+    </div>
+  </div>
+
+  <div class="footer">修改绿色输入框中的数值，结果自动更新</div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function calc() {
+    const volFlow = parseFloat($('volFlow').value) || 0;
+    const pipeLen = parseFloat($('pipeLen').value) || 0;
+    const pipeDia = parseFloat($('pipeDia').value) || 0;
+    const dischargeP = parseFloat($('dischargeP').value) || 0;
+
+    // 压力降 = 450 × 容积流量^1.85 × 管路长度 ÷ (管道内径^5 × 排气压力)
+    let drop = 0;
+    if (pipeDia > 0 && dischargeP > 0) {
+      drop = 450 * Math.pow(volFlow, 1.85) * pipeLen / (Math.pow(pipeDia, 5) * dischargeP);
+    }
+    $('pressureDrop').textContent = drop.toFixed(5);
+
+    const pipeR = parseFloat($('pipeR').value) || 0;
+    const pipeV = parseFloat($('pipeV').value) || 0;
+    const gasP = parseFloat($('gasP').value) || 0;
+    const absT = parseFloat($('absT').value) || 0;
+    const realT = parseFloat($('realT').value) || 0;
+
+    // 流量 = 3.14 × 半径² × 流速 × (压力×10+1) × (绝对温度+20) ÷ (绝对温度+实际温度)
+    let flow = 0;
+    if (absT + realT !== 0) {
+      flow = 3.14 * Math.pow(pipeR, 2) * pipeV * (gasP * 10 + 1) * (absT + 20) / (absT + realT);
+    }
+    $('pipeFlow').textContent = flow.toFixed(2);
+  }
+
+  document.querySelectorAll('.input-box').forEach(el => {
+    el.addEventListener('input', calc);
+  });
+
+  calc();
+</script>
+</body>
+</html>

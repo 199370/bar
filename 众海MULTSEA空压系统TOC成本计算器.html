@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>众海MULTSEA空压能耗计算器</title>
+    <style>
+        :root {
+            /* 品牌色系 - 取自官网深蓝渐变风格 */
+            --primary: #0d47a1;
+            --primary-light: #1e88e5;
+            --primary-lighter: #42a5f5;
+            --primary-bg: #e3f2fd;
+            --accent: #ff6f00;
+            --accent-light: #ff9800;
+            --dark: #1a1a2e;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-500: #6c757d;
+            --gray-700: #495057;
+            --success: #2e7d32;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+            --radius: 10px;
+            --radius-lg: 14px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(180deg, #f0f4f8 0%, #e8edf2 100%);
+            color: var(--dark);
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ========== 顶部品牌条 ========== */
+        .top-bar {
+            background: linear-gradient(135deg, #0a2e6e 0%, #0d47a1 40%, #1565c0 100%);
+            color: #fff;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+        .top-bar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+        }
+        .top-bar a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color .2s;
+        }
+        .top-bar a:hover { color: #fff; }
+        .top-bar .slogan {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.75);
+        }
+
+        /* ========== Header ========== */
+        .header {
+            background: linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #1e88e5 100%);
+            color: #fff;
+            padding: 36px 24px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -40px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .brand-icon {
+            width: 64px; height: 64px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.15);
+            flex-shrink: 0;
+        }
+        .brand-icon svg { width: 36px; height: 36px; }
+        .header-text { flex: 1; }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .header h1 .highlight {
+            color: var(--accent-light);
+        }
+        .header .subtitle {
+            font-size: 15px;
+            opacity: 0.85;
+            margin-bottom: 4px;
+        }
+        .header .tagline {
+            font-size: 13px;
+            color: rgba(255,255,255,0.65);
+            font-style: italic;
+        }
+        .disclaimer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,193,7,0.2);
+            border: 1px solid rgba(255,193,7,0.4);
+            color: #ffeb3b;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+
+        /* ========== 主体容器 ========== */
+        .container {
+            max-width: 1200px;
+            margin: -20px auto 40px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ========== 数据亮点条 ========== */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border-top: 3px solid var(--primary-light);
+            transition: transform .25s, box-shadow .25s;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .stat-card .stat-num {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        /* ========== Tab 导航 ========== */
+        .tab-bar {
+            display: flex;
+            background: #fff;
+            border-radius: var(--radius-lg);
+            padding: 6px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            background: transparent;
+            color: var(--gray-500);
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            background: var(--gray-100);
+            color: var(--primary);
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+        }
+        .tab-btn .tab-icon {
+            font-size: 18px;
+        }
+
+        /* ========== 计算器面板 ========== */
+        .calc-panel {
+            display: none;
+            animation: fadeSlide .4s ease;
+        }
+        .calc-panel.active { display: block; }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+        .panel-header {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f0fe 100%);
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .panel-header .panel-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .panel-header h2 {
+            font-size: 18px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .panel-header .panel-desc {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+        .panel-body {
+            padding: 28px;
+        }
+
+        /* ========== 表单网格 ========== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px 24px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .form-group label .required {
+            color: #e53935;
+            font-size: 12px;
+        }
+        .form-group label .tip {
+            color: var(--gray-500);
+            font-weight: 400;
+            font-size: 12px;
+        }
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrap input {
+            width: 100%;
+            padding: 11px 14px;
+            padding-right: 60px;
+            border: 1.5px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 15px;
+            color: var(--dark);
+            transition: border-color .2s, box-shadow .2s;
+            background: #fff;
+        }
+        .input-wrap input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(30,136,229,0.12);
+        }
+        .input-wrap input:hover {
+            border-color: var(--primary-lighter);
+        }
+        .input-wrap .unit {
+            position: absolute;
+            right: 14px;
+            font-size: 13px;
+            color: var(--gray-500);
+            pointer-events: none;
+        }
+
+        /* ========== 计算按钮 ========== */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin: 28px 0 8px;
+        }
+        .calc-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #fff;
+            border: none;
+            padding: 14px 48px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s;
+            box-shadow: 0 4px 16px rgba(13,71,161,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(13,71,161,0.4);
+            background: linear-gradient(135deg, #0a3d8f 0%, #1976d2 100%);
+        }
+        .calc-btn:active { transform: translateY(0); }
+
+        /* ========== 结果区 ========== */
+        .results {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-top: 16px;
+            border: 1px solid #bbdefb;
+        }
+        .results-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 20px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-light);
+        }
+        .result-item .result-label {
+            font-size: 14px;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+        .result-item .result-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .result-item.highlight-row {
+            background: linear-gradient(90deg, rgba(13,71,161,0.06), rgba(30,136,229,0.06));
+            border-left-color: var(--accent);
+        }
+        .result-item.highlight-row .result-value {
+            color: var(--accent);
+            font-size: 17px;
+        }
+
+        /* ========== 底部品牌区 ========== */
+        .footer {
+            background: var(--dark);
+            color: rgba(255,255,255,0.7);
+            padding: 36px 24px 24px;
+            margin-top: 40px;
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-top {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .footer-brand .footer-logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .footer-brand .footer-motto {
+            font-size: 14px;
+            color: var(--accent-light);
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .footer-brand p {
+            font-size: 13px;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.55);
+        }
+        .footer-col h4 {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .footer-col p, .footer-col a {
+            font-size: 13px;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            line-height: 2;
+            display: block;
+        }
+        .footer-col a:hover { color: var(--accent-light); }
+        .footer-bottom {
+            padding-top: 20px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.55);
+        }
+        /* 醒目提示行 */
+        .footer-notice {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: rgba(255,152,0,0.12);
+            border: 1px solid rgba(255,152,0,0.35);
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin-bottom: 16px;
+            text-align: center;
+            line-height: 1.8;
+        }
+        .footer-notice .notice-icon {
+            font-size: 16px;
+        }
+        .footer-notice .notice-text {
+            color: rgba(255,255,255,0.85);
+            font-size: 13px;
+        }
+        .footer-notice .notice-contact {
+            color: #ff9800;
+            font-weight: 700;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .footer-notice .notice-phone {
+            color: #4fc3f7;
+            font-weight: 700;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+        .footer-notice .notice-sep {
+            color: rgba(255,255,255,0.3);
+            margin: 0 2px;
+        }
+        /* 版权 + 备案行 */
+        .footer-copyline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+        .footer-copyline a {
+            color: rgba(255,255,255,0.3);
+            text-decoration: none;
+        }
+        .footer-copyline a:hover {
+            color: var(--accent-light);
+        }
+        .footer-copyline .dot-sep {
+            opacity: 0.5;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 900px) {
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .form-grid { grid-template-columns: 1fr; }
+            .result-grid { grid-template-columns: 1fr; }
+            .footer-top { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .header { padding: 24px 16px; }
+            .header h1 { font-size: 22px; }
+            .header-inner { flex-direction: column; text-align: center; }
+            .top-bar-inner { flex-direction: column; gap: 6px; font-size: 12px; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 14px 10px; }
+            .stat-card .stat-num { font-size: 20px; }
+            .panel-body { padding: 18px; }
+            .tab-btn { font-size: 14px; padding: 12px 10px; }
+        }
+
+        /* ========== 方案对比计算器专属样式 ========== */
+        .compare-section {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .compare-section h2 {
+            font-size: 17px;
+            color: var(--primary);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8ecf3;
+        }
+        .compare-section h3 {
+            font-size: 14px;
+            color: #555;
+            margin: 12px 0 8px;
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .compare-table th,
+        .compare-table td {
+            border: 1px solid #d9dde3;
+            padding: 7px 10px;
+            text-align: center;
+        }
+        .compare-table th {
+            background: #f4f6fa;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .compare-table td:first-child,
+        .compare-table th:first-child {
+            text-align: left;
+        }
+        .compare-table input[type="number"] {
+            width: 100%;
+            min-width: 70px;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+        }
+        .compare-table input[type="number"]:focus {
+            border-color: var(--primary-light);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(30,136,229,0.15);
+        }
+        .compare-table select {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+            background: #fff8e1;
+        }
+        .input-yellow { background: #fff8e1; }
+        .input-yellow:focus { border-color: var(--primary-light); outline: none; box-shadow: 0 0 0 2px rgba(30,136,229,0.15); }
+        .input-f-yellow { background: #fff3e0; }
+        .input-f-yellow:focus { border-color: #ff9800; outline: none; box-shadow: 0 0 0 2px rgba(255,152,0,0.15); }
+        .input-m-yellow { background: #e8f5e9; }
+        .input-m-yellow:focus { border-color: #43a047; outline: none; box-shadow: 0 0 0 2px rgba(67,160,71,0.15); }
+        .calc-gray { background: #f0f0f0; color: #555; }
+        .calc-blue { background: #e3f2fd; color: #0d47a1; font-weight: 600; }
+        .result-green { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
+        .result-red { background: #ffebee; color: #c62828; font-weight: 600; }
+        .col-header-f { background: #fff3e0 !important; color: #e65100 !important; }
+        .col-header-m { background: #e8f5e9 !important; color: #2e7d32 !important; }
+        .compare-table input[type="number"].input-f-yellow { background: #fff3e0; }
+        .compare-table input[type="number"].input-m-yellow { background: #e8f5e9; }
+        .compare-table select.input-f-yellow { background: #fff3e0; }
+        .compare-table select.input-m-yellow { background: #e8f5e9; }
+
+        .compare-btn-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        .compare-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all .25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .compare-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+        }
+        .compare-btn:active { transform: translateY(0); }
+        .compare-btn-primary { background: var(--primary); color: #fff; }
+        .compare-btn-primary:hover { background: #0a3d8f; }
+        .compare-btn-success { background: #43a047; color: #fff; }
+        .compare-btn-success:hover { background: #388e3c; }
+        .compare-btn-warning { background: #f57c00; color: #fff; }
+        .compare-btn-warning:hover { background: #e65100; }
+
+        /* ========== 对比分析结论（扁平化，与 compare-section 同图层） ========== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        .badge-bad {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc80;
+        }
+        .badge-neutral {
+            background: #eceff1;
+            color: #455a64;
+            border: 1px solid #b0bec5;
+        }
+        /* 结论表内数值单元格 */
+        .val-cell {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-weight: 700;
+            font-size: 13.5px;
+            color: var(--primary);
+        }
+        .val-cell.positive { color: #2e7d32; }
+        .val-cell.negative { color: #c62828; }
+        /* TCO 高亮行：仅加粗字体，不破坏图层，无边框 */
+        .compare-table tr.tco-highlight td {
+            font-weight: 700;
+        }
+        .compare-table tr.tco-highlight td:first-child {
+            color: var(--primary);
+        }
+
+        .summary-card-compare {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            margin-bottom: 20px;
+        }
+        .summary-card-compare h2 {
+            color: #fff;
+            border: none;
+            margin-bottom: 12px;
+            font-size: 17px;
+        }
+        .summary-grid-compare {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+        }
+        .summary-item-compare {
+            background: rgba(255,255,255,0.12);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .summary-item-compare .label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        .summary-item-compare .value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        .summary-item-compare .sub {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        @media print {
+            body { background: #fff; padding: 10px; }
+            .compare-section { box-shadow: none; border: 1px solid #ddd; }
+            .compare-btn-row { display: none; }
+            .compare-table input[type="number"] { border: none; background: transparent; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部信息条 -->
+    <div class="top-bar">
+        <div class="top-bar-inner">
+            <div class="slogan">
+                <span>📞 400-766-0606</span>
+                <span>|</span>
+                <span>📧 zhonghaimultseazhou@latelas.com</span>
+            </div>
+            <div>
+                <a href="https://www.multsea.com" target="_blank">访问官网</a>
+                <a href="https://www.multsea.com" target="_blank">联系我们</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主 Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </div>
+            <div class="header-text">
+                <h1>众海<span class="highlight">MULTSEA</span> 空压能耗计算器</h1>
+                <p class="subtitle">以技术创新与高品质服务双轮驱动，提供全球空压系统场景解决方案</p>
+                <p class="tagline">— 帮助客户商业成功 · 全国千店全网服务 · 高效节能稳定可靠 —</p>
+                <span class="disclaimer-badge">⚠ 计算结果仅供参考，遇到问题请联系解决方案部吴超 16678059919</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- 数据亮点条 -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-num">25年+</div>
+                <div class="stat-label">研发生产技术积累</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">150+</div>
+                <div class="stat-label">专利荣誉</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">50000+</div>
+                <div class="stat-label">成功案例</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">460+</div>
+                <div class="stat-label">国内直销服务网点</div>
+            </div>
+        </div>
+
+        <!-- Tab 导航 -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-target="var-estimate">
+                <span class="tab-icon">⚡</span> 变频估算
+            </button>
+            <button class="tab-btn" data-target="fix-estimate">
+                <span class="tab-icon">⚙️</span> 工频估算
+            </button>
+            <button class="tab-btn" data-target="compare-estimate">
+                <span class="tab-icon">📊</span> 压缩系统方案TCO计算
+            </button>
+        </div>
+
+        <!-- ============ 变频估算 ============ -->
+        <section id="var-estimate" class="calc-panel active">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon">⚡</div>
+                    <div>
+                        <h2>变频空压机能耗估算</h2>
+                        <div class="panel-desc">根据变频器运行参数，精确估算瞬时功率、流量及平均能耗指标</div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>空压机额定功率 (KW) <span class="tip">— 铭牌标注值</span></label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-power" value="22" step="0.1">
+                                <span class="unit">KW</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>空压机额定容积流量 <span class="tip">— FAD 自由空气流量</span></label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-flow" value="3.2" step="0.1">
+                                <span class="unit">m³/min</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>电机额定频率 (Hz)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-freq" value="240" step="1">
+                                <span class="unit">Hz</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>电机服务系数 (S.F)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-sf" value="1.2" step="0.1">
+                                <span class="unit">-</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>设置运行上限频率 (Hz)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-freq-max" value="250" step="1">
+                                <span class="unit">Hz</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>设置运行下限频率 (Hz)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-freq-min" value="80" step="1">
+                                <span class="unit">Hz</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>空载率</label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-idle-rate" value="0.02" step="0.01">
+                                <span class="unit">-</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>实际运行频率 (Hz) <span class="tip">— 当前工况</span></label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-freq-actual" value="150" step="1">
+                                <span class="unit">Hz</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>负载率</label>
+                            <div class="input-wrap">
+                                <input type="number" id="var-load-rate" value="0.98" step="0.01">
+                                <span class="unit">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="calc-btn" id="calc-var">📊 计算变频能耗</button>
+                    </div>
+
+                    <div class="results">
+                        <div class="results-title">📋 计算结果</div>
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <span class="result-label">估算瞬时功率 (非空载)</span>
+                                <span class="result-value" id="var-power-result">— KW</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">估算瞬时功率 (空载)</span>
+                                <span class="result-value" id="var-idle-power-result">— KW</span>
+                            </div>
+                            <div class="result-item highlight-row">
+                                <span class="result-label">⭐ 平均运行功率</span>
+                                <span class="result-value" id="var-avg-power-result">— KW</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">估算瞬时流量</span>
+                                <span class="result-value" id="var-flow-result">— m³/min</span>
+                            </div>
+                            <div class="result-item highlight-row">
+                                <span class="result-label">⭐ 平均瞬时流量</span>
+                                <span class="result-value" id="var-avg-flow-result">— m³/min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 工频估算 ============ -->
+        <section id="fix-estimate" class="calc-panel">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon">⚙️</div>
+                    <div>
+                        <h2>工频空压机能耗估算</h2>
+                        <div class="panel-desc">基于加载/卸载时间与压力参数，评估工频机运行效率与能耗水平</div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>空压机额定功率 (KW)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="fix-power" value="22" step="0.1">
+                                <span class="unit">KW</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>空压机额定容积流量</label>
+                            <div class="input-wrap">
+                                <input type="number" id="fix-flow" value="3" step="0.1">
+                                <span class="unit">m³/min</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>加载压力 (bar)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="fix-load-p" value="5" step="0.1">
+                                <span class="unit">bar</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>卸载压力 (bar)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="fix-unload-p" value="6" step="0.1">
+                                <span class="unit">bar</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>总运行时间 (h)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="fix-total-time" value="20280" step="1">
+                                <span class="unit">h</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>加载时间 (h)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="fix-load-time" value="14282" step="1">
+                                <span class="unit">h</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="calc-btn" id="calc-fix">📊 计算工频能耗</button>
+                    </div>
+
+                    <div class="results">
+                        <div class="results-title">📋 计算结果</div>
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <span class="result-label">负载率</span>
+                                <span class="result-value" id="fix-load-rate-result">—</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">空载率</span>
+                                <span class="result-value" id="fix-idle-rate-result">—</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">加载耗电</span>
+                                <span class="result-value" id="fix-load-power-result">— kw.h</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">卸载耗电</span>
+                                <span class="result-value" id="fix-unload-power-result">— kw.h</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">压差损耗</span>
+                                <span class="result-value" id="fix-p-diff-loss-result">— kw.h</span>
+                            </div>
+                            <div class="result-item highlight-row">
+                                <span class="result-label">⭐ 估算平均耗电量/h</span>
+                                <span class="result-value" id="fix-avg-power-result">— kw.h</span>
+                            </div>
+                            <div class="result-item highlight-row">
+                                <span class="result-label">⭐ 平均用气量/min</span>
+                                <span class="result-value" id="fix-avg-air-result">— m³/min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 方案价值对比 ============ -->
+        <section id="compare-estimate" class="calc-panel">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon">📊</div>
+                    <div>
+                        <h2>压缩空气系统方案TCO计算器</h2>
+                        <div class="panel-desc">竞对方案 vs 我方方案 · 全系统能耗对比 · 修改参数自动计算 · 数据不离开本机</div>
+                    <div class="panel-desc" style="color:#ff9800;font-weight:500;margin-top:4px;">⚠ 计算结果仅供参考，如使用过程中遇到问题请联系解决方案部吴超 16678059919</div>
+                    </div>
+                </div>
+                <div class="panel-body">
+
+        <!-- ④ 结果总览（置顶） -->
+        <div class="summary-card-compare" id="summaryCard">
+          <h2>📊 核心结论总览</h2>
+          <div class="summary-grid-compare">
+            <div class="summary-item-compare"><div class="label">年总电费差异</div><div class="value" id="sumFee">—</div><div class="sub">竞对 − 我方，正数=我方省</div></div>
+            <div class="summary-item-compare"><div class="label">年运行成本差异</div><div class="value" id="sumOp">—</div><div class="sub">含电费+维保</div></div>
+            <div class="summary-item-compare"><div class="label">10年TCO差异</div><div class="value" id="sumTCO">—</div><div class="sub">全生命周期节省</div></div>
+            <div class="summary-item-compare"><div class="label">投资回收期</div><div class="value" id="sumPayback">—</div><div class="sub">年（我方增量投资回收）</div></div>
+          </div>
+        </div>
+
+        <!-- ① 基础参数区 -->
+        <div class="compare-section">
+          <h2>① 基础参数区（两套方案共用基准）</h2>
+          <table class="compare-table">
+            <tr><th style="width:22%">参数名称</th><th style="width:10%">单位</th><th style="width:18%">数值</th><th>填写说明</th></tr>
+            <tr><td>额定气量需求</td><td>m³/min</td><td><input class="input-yellow" type="number" id="p_demand" value="20" step="0.1"></td><td>客户实际所需压缩空气流量</td></tr>
+            <tr><td>年运行小时数</td><td>h</td><td><input class="input-yellow" type="number" id="p_hours" value="8000" step="100"></td><td>设备年均运行时长</td></tr>
+            <tr><td>工业电价</td><td>元/kWh</td><td><input class="input-yellow" type="number" id="p_price" value="0.7" step="0.01"></td><td>客户当地实际电价</td></tr>
+            <tr><td>设备使用年限</td><td>年</td><td><input class="input-yellow" type="number" id="p_life" value="10" step="1"></td><td>方案对比的生命周期</td></tr>
+          </table>
+        </div>
+
+        <!-- ② 方案参数整合输入区（竞对 vs 众海 并排对比） -->
+        <div class="compare-section">
+          <h2>② 方案参数输入区（橙色=竞对，绿色=众海，黄色=基础共用）</h2>
+          <table class="compare-table">
+            <tr>
+              <th style="width:20%">参数名称</th>
+              <th style="width:8%">单位</th>
+              <th style="width:14%" class="col-header-f">竞对数值</th>
+              <th style="width:14%" class="col-header-m">众海数值</th>
+              <th>填写说明</th>
+            </tr>
+            <tr>
+              <td>整套设备购置价</td><td>元</td>
+              <td><input class="input-f-yellow" type="number" id="f_price" value="130000" step="1000"></td>
+              <td><input class="input-m-yellow" type="number" id="m_price" value="150000" step="1000"></td>
+              <td>含空压机、冷干机、吸干机、安装</td>
+            </tr>
+            <tr>
+              <td>空压机的额定气量</td><td>m³/min</td>
+              <td><input class="input-f-yellow" type="number" id="f_airflow" value="24.02" step="0.1"></td>
+              <td><input class="input-m-yellow" type="number" id="m_airflow" value="23.6" step="0.1"></td>
+              <td>空压机铭牌排气量</td>
+            </tr>
+            <tr>
+              <td>空压机比功率</td><td>kW/(m³/min)</td>
+              <td><input class="input-f-yellow" type="number" id="f_sp" value="6.1" step="0.1"></td>
+              <td><input class="input-m-yellow" type="number" id="m_sp" value="5.7" step="0.1"></td>
+              <td>机组能效核心指标，越低越节能</td>
+            </tr>
+            <tr>
+              <td>空压机额定功率</td><td>kW</td>
+              <td><input class="input-f-yellow" type="number" id="f_ratedkw" value="110" step="1"></td>
+              <td><input class="input-m-yellow" type="number" id="m_ratedkw" value="110" step="1"></td>
+              <td>设备铭牌额定功率</td>
+            </tr>
+            <tr>
+              <td>冷干机类型</td><td>—</td>
+              <td><select class="input-f-yellow" id="f_dryer_type"><option value="定频" selected>定频</option><option value="变频">变频</option></select></td>
+              <td><select class="input-m-yellow" id="m_dryer_type"><option value="定频">定频</option><option value="变频" selected>变频</option></select></td>
+              <td>定频 / 变频</td>
+            </tr>
+            <tr>
+              <td>冷干机额定功率</td><td>kW</td>
+              <td><input class="input-f-yellow" type="number" id="f_dryer_kw" value="5" step="0.5"></td>
+              <td><input class="input-m-yellow" type="number" id="m_dryer_kw" value="1.5" step="0.5"></td>
+              <td>设备满载运行功率</td>
+            </tr>
+            <tr>
+              <td>冷干机额定气量</td><td>m³/min</td>
+              <td><input class="input-f-yellow" type="number" id="f_dryer_air" value="25" step="0.5"></td>
+              <td><input class="input-m-yellow" type="number" id="m_dryer_air" value="25" step="0.5"></td>
+              <td>冷干机额定处理气量</td>
+            </tr>
+            <tr>
+              <td>冷干机负荷系数</td><td>—</td>
+              <td><input class="input-f-yellow" type="number" id="f_dryer_load" value="1" step="0.05"></td>
+              <td><input class="input-m-yellow" type="number" id="m_dryer_load" value="0.8" step="0.05"></td>
+              <td>变频时有效，定频填1</td>
+            </tr>
+            <tr>
+              <td>吸干机类型</td><td>—</td>
+              <td><select class="input-f-yellow" id="f_dryer2_type"><option value="无热">无热</option><option value="微热" selected>微热</option><option value="鼓风热">鼓风热</option><option value="零气耗">零气耗</option></select></td>
+              <td><select class="input-m-yellow" id="m_dryer2_type"><option value="无热">无热</option><option value="微热">微热</option><option value="鼓风热">鼓风热</option><option value="零气耗" selected>零气耗</option></select></td>
+              <td>无热 / 微热 / 鼓风热 / 零气耗</td>
+            </tr>
+            <tr>
+              <td>吸干机再生耗气率</td><td>%</td>
+              <td><input class="input-f-yellow" type="number" id="f_regen_rate" value="0.07" step="0.01"></td>
+              <td><input class="input-m-yellow" type="number" id="m_regen_rate" value="0.015" step="0.005"></td>
+              <td>再生损耗成品气占比（小数，如0.07=7%）</td>
+            </tr>
+            <tr>
+              <td>保养周期</td><td>小时/次</td>
+              <td><input class="input-f-yellow" type="number" id="f_maint_cycle" value="4000" step="500"></td>
+              <td><input class="input-m-yellow" type="number" id="m_maint_cycle" value="4000" step="500"></td>
+              <td>每运行N小时保养一次</td>
+            </tr>
+            <tr>
+              <td>单次保养费用</td><td>元</td>
+              <td><input class="input-f-yellow" type="number" id="f_maint_cost" value="1000" step="100"></td>
+              <td><input class="input-m-yellow" type="number" id="m_maint_cost" value="800" step="100"></td>
+              <td>每次保养总成本（人工+材料）</td>
+            </tr>
+            <tr>
+              <td>耗材更换周期</td><td>年</td>
+              <td><input class="input-f-yellow" type="number" id="f_consumable_cycle" value="5" step="1"></td>
+              <td><input class="input-m-yellow" type="number" id="m_consumable_cycle" value="5" step="1"></td>
+              <td>每N年更换一次耗材</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- ③ 自动计算区 -->
+        <div class="compare-section">
+          <h2>③ 自动计算区（灰色=计算项，蓝色=关键汇总；橙色列=竞对，绿色列=众海）</h2>
+          <table class="compare-table">
+            <tr>
+              <th style="width:22%">参数名称</th>
+              <th style="width:8%">单位</th>
+              <th style="width:14%" class="col-header-f">竞对</th>
+              <th style="width:14%" class="col-header-m">众海</th>
+            </tr>
+            <tr><td>客户每小时需求气量</td><td>m³/h</td><td class="calc-gray" id="r_f_hourly">—</td><td class="calc-gray" id="r_m_hourly">—</td></tr>
+            <tr><td>客户年需求气量</td><td>m³/年</td><td class="calc-gray" id="r_f_annual_vol">—</td><td class="calc-gray" id="r_m_annual_vol">—</td></tr>
+            <tr><td>单位产气耗电量</td><td>kWh/m³</td><td class="calc-gray" id="r_f_unit_kwh">—</td><td class="calc-gray" id="r_m_unit_kwh">—</td></tr>
+            <tr><td class="calc-blue">空压机年耗电量</td><td>kWh</td><td class="calc-blue" id="r_f_airpower">—</td><td class="calc-blue" id="r_m_airpower">—</td></tr>
+            <tr><td colspan="4" style="background:#fafbfd;font-size:12px;color:#1a3c6e;font-weight:600;">— 吸干机能耗拆解 —</td></tr>
+            <tr><td>吸干机类型</td><td>—</td><td class="calc-gray" id="r_f_dryer2_type">—</td><td class="calc-gray" id="r_m_dryer2_type">—</td></tr>
+            <tr><td>电加热器峰值功率</td><td>kW</td><td class="calc-gray" id="r_f_heater_peak">—</td><td class="calc-gray" id="r_m_heater_peak">—</td></tr>
+            <tr><td>鼓风机峰值功率</td><td>kW</td><td class="calc-gray" id="r_f_blower_peak">—</td><td class="calc-gray" id="r_m_blower_peak">—</td></tr>
+            <tr><td>全年平均运行电功率</td><td>kW</td><td class="calc-gray" id="r_f_avg_elec_kw">—</td><td class="calc-gray" id="r_m_avg_elec_kw">—</td></tr>
+            <tr><td>成品气损失功率</td><td>kW</td><td class="calc-gray" id="r_f_gas_loss_kw">—</td><td class="calc-gray" id="r_m_gas_loss_kw">—</td></tr>
+            <tr><td>总等价平均能耗</td><td>kW</td><td class="calc-gray" id="r_f_total_equiv_kw">—</td><td class="calc-gray" id="r_m_total_equiv_kw">—</td></tr>
+            <tr><td>吸干机年总等效电耗</td><td>kWh</td><td class="calc-gray" id="r_f_dryer2_annual_kwh">—</td><td class="calc-gray" id="r_m_dryer2_annual_kwh">—</td></tr>
+            <tr><td>冷干机年耗电量</td><td>kWh</td><td class="calc-gray" id="r_f_dryer_elec">—</td><td class="calc-gray" id="r_m_dryer_elec">—</td></tr>
+            <tr><td class="calc-blue">年总电费</td><td>元</td><td class="calc-blue" id="r_f_total_elec_fee">—</td><td class="calc-blue" id="r_m_total_elec_fee">—</td></tr>
+            <tr><td>年保养次数</td><td>次</td><td class="calc-gray" id="r_f_maint_cnt">—</td><td class="calc-gray" id="r_m_maint_cnt">—</td></tr>
+            <tr><td>年保养费用</td><td>元</td><td class="calc-gray" id="r_f_maint_fee">—</td><td class="calc-gray" id="r_m_maint_fee">—</td></tr>
+            <tr><td>年均耗材费用</td><td>元</td><td class="calc-gray" id="r_f_cons_fee">—</td><td class="calc-gray" id="r_m_cons_fee">—</td></tr>
+            <tr><td>年总维保费用</td><td>元</td><td class="calc-gray" id="r_f_total_maint">—</td><td class="calc-gray" id="r_m_total_maint">—</td></tr>
+            <tr><td class="calc-blue">年总运行成本</td><td>元</td><td class="calc-blue" id="r_f_total_op">—</td><td class="calc-blue" id="r_m_total_op">—</td></tr>
+            <tr><td class="calc-blue">TCO总成本</td><td>元</td><td class="calc-blue" id="r_f_tco">—</td><td class="calc-blue" id="r_m_tco">—</td></tr>
+          </table>
+        </div>
+
+        <!-- ④ 结果对比区 -->
+        <div class="compare-section">
+          <h2>④ 结果展示区（差异化优势对比）</h2>
+          <table class="compare-table">
+            <tr><th style="width:22%">对比维度</th><th style="width:16%">竞对方案</th><th style="width:16%">我方方案</th><th style="width:14%">差异（竞对−我方）</th><th>说明</th></tr>
+            <tr><td>初始投资</td><td id="c_invest_f">—</td><td id="c_invest_m">—</td><td id="c_invest_d">—</td><td>整套设备采购及安装</td></tr>
+            <tr><td>年总电费</td><td id="c_fee_f">—</td><td id="c_fee_m">—</td><td id="c_fee_d">—</td><td>全系统用电（含吸干机等效电耗、冷干机）</td></tr>
+            <tr><td>年维保费用</td><td id="c_maint_f">—</td><td id="c_maint_m">—</td><td id="c_maint_d">—</td><td>保养+耗材</td></tr>
+            <tr><td>年总运行成本</td><td id="c_op_f">—</td><td id="c_op_m">—</td><td id="c_op_d">—</td><td>年总电费 + 年总维保</td></tr>
+            <tr><td>10年TCO总成本</td><td id="c_tco_f">—</td><td id="c_tco_m">—</td><td id="c_tco_d">—</td><td>购置价 + 年运行成本 × 使用年限</td></tr>
+            <tr><td>投资回收期</td><td colspan="2" style="text-align:center;" id="c_payback">—</td><td id="c_payback_d">—</td><td>我方增量投资 ÷ 年运行成本节约额</td></tr>
+          </table>
+
+          <h3 style="font-size:16px;color:var(--primary);margin:18px 0 10px;padding-bottom:8px;border-bottom:2px solid #e8ecf3;">▎ 对比分析结论</h3>
+          <table class="compare-table">
+            <tr><th style="width:22%">对比维度</th><th style="width:18%">数值</th><th style="width:14%">判定</th><th>说明</th></tr>
+            <tr><td>年电费差异</td><td class="val-cell" id="a_fee">—</td><td id="a_fee_tag">—</td><td style="text-align:left;color:var(--gray-500);font-size:12.5px;">竞对年电费 − 我方年电费，正数=我方省</td></tr>
+            <tr><td>年维保差异</td><td class="val-cell" id="a_maint">—</td><td id="a_maint_tag">—</td><td style="text-align:left;color:var(--gray-500);font-size:12.5px;">竞对维保 − 我方维保</td></tr>
+            <tr><td>年总运行成本差异</td><td class="val-cell" id="a_op">—</td><td id="a_op_tag">—</td><td style="text-align:left;color:var(--gray-500);font-size:12.5px;">竞对年运行成本 − 我方年运行成本</td></tr>
+            <tr class="tco-highlight"><td>💰 10年TCO差异（总节省）</td><td class="val-cell" id="a_tco">—</td><td id="a_tco_tag">—</td><td style="text-align:left;color:var(--gray-500);font-size:12.5px;">竞对TCO − 我方TCO</td></tr>
+            <tr><td>⏱️ 静态投资回收期</td><td class="val-cell" id="a_payback">—</td><td id="a_payback_tag">—</td><td style="text-align:left;color:var(--gray-500);font-size:12.5px;">我方增量投资 ÷ 年运行成本节约额</td></tr>
+          </table>
+        </div>
+
+        <div class="compare-btn-row">
+          <button class="compare-btn compare-btn-primary" onclick="compareResetAll()">🔄 恢复默认值</button>
+          <button class="compare-btn compare-btn-success" onclick="compareExportCSV()">📥 导出CSV报告</button>
+          <button class="compare-btn compare-btn-warning" onclick="window.print()">🖨️ 打印报告</button>
+        </div>
+
+                </div><!-- /panel-body -->
+            </div><!-- /panel-card -->
+        </section>
+
+    </div><!-- /container -->
+
+    <!-- 底部品牌区 -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="footer-logo">MULTSEA 众海机械</div>
+                    <div class="footer-motto">以技术创新与高品质服务双轮驱动，帮助客户商业成功</div>
+                    <p>山东众海机械有限公司是一家拥有深厚行业积累和全面技术实力的综合型螺杆空压机生产公司，国家高新技术企业。产品畅销全球110多个国家和地区。</p>
+                </div>
+                <div class="footer-col">
+                    <h4>联系方式</h4>
+                    <p>📞 400-766-0606</p>
+                    <p>📧 zhonghaimultseazhou@latelas.com</p>
+                    <p>📍 山东省临沂市兰陵县S229凤凰智造园</p>
+                </div>
+                <div class="footer-col">
+                    <h4>快速链接</h4>
+                    <a href="https://www.multsea.com" target="_blank">官网首页</a>
+                    <a href="https://www.multsea.com" target="_blank">产品中心</a>
+                    <a href="https://www.multsea.com" target="_blank">行业应用</a>
+                    <a href="https://www.multsea.com" target="_blank">新闻动态</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <!-- 醒目提示行：断句分行，重点突出 -->
+                <div class="footer-notice">
+                    <span class="notice-icon">⚠️</span>
+                    <span class="notice-text">计算结果仅供参考</span>
+                    <span class="notice-sep">|</span>
+                    <span class="notice-text">使用过程中遇到问题请联系</span>
+                    <span class="notice-contact">解决方案部 · 吴超</span>
+                    <span class="notice-sep">|</span>
+                    <a class="notice-phone" href="tel:16678059919">📞 16678059919</a>
+                </div>
+                <!-- 版权 + 备案号 -->
+                <div class="footer-copyline">
+                    <span>© 山东众海机械有限公司</span>
+                    <span class="dot-sep">·</span>
+                    <span>众海MULTSEA能耗计算器 V5.0</span>
+                    <span class="dot-sep">·</span>
+                    <span>计算结果仅供参考</span>
+                    <span class="dot-sep">·</span>
+                    <span>鲁ICP备19023506号-5</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ===== Tab 切换 =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.target).classList.add('active');
+            });
+        });
+
+        // ===== 变频估算 =====
+        document.getElementById('calc-var').addEventListener('click', () => {
+            const power  = +document.getElementById('var-power').value;
+            const flow   = +document.getElementById('var-flow').value;
+            const freq   = +document.getElementById('var-freq').value;
+            const sf     = +document.getElementById('var-sf').value;
+            const idleR  = +document.getElementById('var-idle-rate').value;
+            const freqA  = +document.getElementById('var-freq-actual').value;
+            const loadR  = +document.getElementById('var-load-rate').value;
+
+            const pNonIdle = (power * (freqA / freq) * sf).toFixed(2);
+            const pIdle    = (power * 0.15).toFixed(2);
+            const avgP     = (pNonIdle * (1 - idleR) + pIdle * idleR).toFixed(2);
+            const flowInst = (flow * (freqA / freq)).toFixed(2);
+            const avgFlow  = (flowInst * loadR).toFixed(2);
+
+            document.getElementById('var-power-result').textContent     = pNonIdle + ' KW';
+            document.getElementById('var-idle-power-result').textContent = pIdle + ' KW';
+            document.getElementById('var-avg-power-result').textContent  = avgP + ' KW';
+            document.getElementById('var-flow-result').textContent       = flowInst + ' m³/min';
+            document.getElementById('var-avg-flow-result').textContent   = avgFlow + ' m³/min';
+        });
+
+        // ===== 工频估算 =====
+        document.getElementById('calc-fix').addEventListener('click', () => {
+            const power     = +document.getElementById('fix-power').value;
+            const flow      = +document.getElementById('fix-flow').value;
+            const loadP     = +document.getElementById('fix-load-p').value;
+            const unloadP   = +document.getElementById('fix-unload-p').value;
+            const totalTime = +document.getElementById('fix-total-time').value;
+            const loadTime  = +document.getElementById('fix-load-time').value;
+
+            const loadR  = (loadTime / totalTime).toFixed(4);
+            const idleR  = (1 - loadR).toFixed(4);
+            const loadPw = (power * 0.7).toFixed(2);
+            const unloadPw = (power * 0.12).toFixed(2);
+            const pDiff  = ((unloadP - loadP) * 0.2).toFixed(2);
+            const avgPw  = (parseFloat(loadPw) + parseFloat(unloadPw) + parseFloat(pDiff)).toFixed(2);
+            const avgAir = (flow * loadR).toFixed(2);
+
+            document.getElementById('fix-load-rate-result').textContent     = loadR;
+            document.getElementById('fix-idle-rate-result').textContent     = idleR;
+            document.getElementById('fix-load-power-result').textContent    = loadPw + ' kw.h';
+            document.getElementById('fix-unload-power-result').textContent  = unloadPw + ' kw.h';
+            document.getElementById('fix-p-diff-loss-result').textContent   = pDiff + ' kw.h';
+            document.getElementById('fix-avg-power-result').textContent     = avgPw + ' kw.h';
+            document.getElementById('fix-avg-air-result').textContent        = avgAir + ' m³/min';
+        });
+
+        // ========================================================
+        // ===== 方案价值对比计算器（第二个HTML的全部JS逻辑） =====
+        // ========================================================
+
+        // ========== 工具函数 ==========
+        const $ = id => document.getElementById(id);
+        const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+        const txt = id => $(id).value.trim();
+        const fmt = v => (Math.round(v)).toLocaleString('zh-CN');
+        const fmt2 = v => (Math.round(v*100)/100).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+        const fmt3 = v => (Math.round(v*1000)/1000).toLocaleString('zh-CN',{minimumFractionDigits:3,maximumFractionDigits:3});
+
+        function setText(id, val, cls) {
+          const el = $(id);
+          if(el) { el.textContent = val; if(cls) el.className = cls; }
+        }
+
+        // ========== 吸干机能耗计算（按类型拆解） ==========
+        function calcDryer2(type, airflow, regenRate, hours, price) {
+          const Q = airflow;
+          let heaterPeak = 0;
+          let blowerPeak = 0;
+          let avgElecKw  = 0;
+
+          const t = type.trim();
+
+          if (t === '微热') {
+            heaterPeak = Q / 2.5;
+            avgElecKw = heaterPeak / 2.5;
+          } else if (t === '鼓风热' || t === '零气耗') {
+            heaterPeak = 0.65 * Q;
+            blowerPeak = Q / 7.5;
+            avgElecKw = (heaterPeak + blowerPeak) / 3;
+          } else if (t === '无热') {
+            heaterPeak = 0;
+            blowerPeak = 0;
+            avgElecKw = 0;
+          }
+
+          const gasLossKw = Q * regenRate * 6;
+          const totalEquivKw = avgElecKw + gasLossKw;
+          const annualKwh = totalEquivKw * hours;
+          const annualFee = annualKwh * price;
+
+          return { heaterPeak, blowerPeak, avgElecKw, gasLossKw, totalEquivKw, annualKwh, annualFee };
+        }
+
+        // ========== 单侧面积计算 ==========
+        function calcSide(prefix) {
+          const demand = num('p_demand');
+          const hours  = num('p_hours');
+          const price  = num('p_price');
+
+          const sp        = num(prefix+'_sp');
+          const airflow   = num(prefix+'_airflow');
+          const dryerType = txt(prefix+'_dryer2_type');
+          const regenRate = num(prefix+'_regen_rate');
+          const dryerKw   = num(prefix+'_dryer_kw');
+          const dryerAir  = num(prefix+'_dryer_air');
+          const maintCycle= num(prefix+'_maint_cycle');
+          const maintCost = num(prefix+'_maint_cost');
+          const consCycle = num(prefix+'_consumable_cycle');
+          const coldDryerType = txt(prefix+'_dryer_type');
+
+          // 空压机年耗电量
+          const hourlyDemand = demand * 60;
+          const annualVol    = hourlyDemand * hours;
+          const unitKwh      = sp / 60;
+          const airpowerKwh  = annualVol * unitKwh;
+          const airpowerFee  = airpowerKwh * price;
+
+          // 吸干机能耗
+          const d2 = calcDryer2(dryerType, airflow, regenRate, hours, price);
+
+          // 冷干机
+          let dryerElec = 0;
+          if (coldDryerType === '变频') {
+            const loadFactor = num(prefix+'_dryer_load') || 1;
+            dryerElec = dryerKw * loadFactor * hours;
+          } else {
+            dryerElec = dryerKw * hours;
+          }
+          const dryerFee = dryerElec * price;
+
+          // 年总电费
+          const totalElecFee = airpowerFee + d2.annualFee + dryerFee;
+
+          // 维保
+          const maintCnt   = hours / maintCycle;
+          const maintFee   = maintCnt * maintCost;
+          const consFee    = maintCost / consCycle;
+          const totalMaint = maintFee + consFee;
+
+          // 年总运行成本
+          const totalOp = totalElecFee + totalMaint;
+
+          return {
+            hourlyDemand, annualVol, unitKwh, airpowerKwh, airpowerFee,
+            dryerType,
+            heaterPeak: d2.heaterPeak,
+            blowerPeak: d2.blowerPeak,
+            avgElecKw: d2.avgElecKw,
+            gasLossKw: d2.gasLossKw,
+            totalEquivKw: d2.totalEquivKw,
+            dryer2Kwh: d2.annualKwh,
+            dryerElec, dryerFee,
+            totalElecFee, maintCnt, maintFee, consFee, totalMaint, totalOp
+          };
+        }
+
+        // ========== 主渲染 ==========
+        function compareRender() {
+          const hours = num('p_hours');
+          const price = num('p_price');
+          const life  = num('p_life');
+
+          const fPrice = num('f_price');
+          const mPrice = num('m_price');
+
+          const F = calcSide('f');
+          const M = calcSide('m');
+
+          // 竞对渲染
+          setText('r_f_hourly', fmt(F.hourlyDemand));
+          setText('r_f_annual_vol', fmt(F.annualVol));
+          setText('r_f_unit_kwh', fmt3(F.unitKwh));
+          setText('r_f_airpower', fmt(F.airpowerKwh));
+
+          setText('r_f_dryer2_type', F.dryerType);
+          setText('r_f_heater_peak', fmt2(F.heaterPeak));
+          setText('r_f_blower_peak', fmt2(F.blowerPeak));
+          setText('r_f_avg_elec_kw', fmt2(F.avgElecKw));
+          setText('r_f_gas_loss_kw', fmt2(F.gasLossKw));
+          setText('r_f_total_equiv_kw', fmt2(F.totalEquivKw));
+          setText('r_f_dryer2_annual_kwh', fmt(F.dryer2Kwh));
+
+          setText('r_f_dryer_elec', fmt(F.dryerElec));
+          setText('r_f_total_elec_fee', fmt(F.totalElecFee));
+          setText('r_f_maint_cnt', fmt2(F.maintCnt));
+          setText('r_f_maint_fee', fmt(F.maintFee));
+          setText('r_f_cons_fee', fmt(F.consFee));
+          setText('r_f_total_maint', fmt(F.totalMaint));
+          setText('r_f_total_op', fmt(F.totalOp));
+          const fTCO = fPrice + F.totalOp * life;
+          setText('r_f_tco', fmt(fTCO));
+
+          // 我方渲染
+          setText('r_m_hourly', fmt(M.hourlyDemand));
+          setText('r_m_annual_vol', fmt(M.annualVol));
+          setText('r_m_unit_kwh', fmt3(M.unitKwh));
+          setText('r_m_airpower', fmt(M.airpowerKwh));
+
+          setText('r_m_dryer2_type', M.dryerType);
+          setText('r_m_heater_peak', fmt2(M.heaterPeak));
+          setText('r_m_blower_peak', fmt2(M.blowerPeak));
+          setText('r_m_avg_elec_kw', fmt2(M.avgElecKw));
+          setText('r_m_gas_loss_kw', fmt2(M.gasLossKw));
+          setText('r_m_total_equiv_kw', fmt2(M.totalEquivKw));
+          setText('r_m_dryer2_annual_kwh', fmt(M.dryer2Kwh));
+
+          setText('r_m_dryer_elec', fmt(M.dryerElec));
+          setText('r_m_total_elec_fee', fmt(M.totalElecFee));
+          setText('r_m_maint_cnt', fmt2(M.maintCnt));
+          setText('r_m_maint_fee', fmt(M.maintFee));
+          setText('r_m_cons_fee', fmt(M.consFee));
+          setText('r_m_total_maint', fmt(M.totalMaint));
+          setText('r_m_total_op', fmt(M.totalOp));
+          const mTCO = mPrice + M.totalOp * life;
+          setText('r_m_tco', fmt(mTCO));
+
+          // 对比区
+          setText('c_invest_f', fmt(fPrice));
+          setText('c_invest_m', fmt(mPrice));
+          const investD = fPrice - mPrice;
+          setText('c_invest_d', fmt(investD), investD >= 0 ? 'result-green' : 'result-red');
+
+          setText('c_fee_f', fmt(F.totalElecFee));
+          setText('c_fee_m', fmt(M.totalElecFee));
+          const feeD = F.totalElecFee - M.totalElecFee;
+          setText('c_fee_d', fmt(feeD), feeD >= 0 ? 'result-green' : 'result-red');
+
+          setText('c_maint_f', fmt(F.totalMaint));
+          setText('c_maint_m', fmt(M.totalMaint));
+          const maintD = F.totalMaint - M.totalMaint;
+          setText('c_maint_d', fmt(maintD), maintD >= 0 ? 'result-green' : 'result-red');
+
+          setText('c_op_f', fmt(F.totalOp));
+          setText('c_op_m', fmt(M.totalOp));
+          const opD = F.totalOp - M.totalOp;
+          setText('c_op_d', fmt(opD), opD >= 0 ? 'result-green' : 'result-red');
+
+          setText('c_tco_f', fmt(fTCO));
+          setText('c_tco_m', fmt(mTCO));
+          const tcoD = fTCO - mTCO;
+          setText('c_tco_d', fmt(tcoD), tcoD >= 0 ? 'result-green' : 'result-red');
+
+          // 投资回收期
+          let payback = 0;
+          if (opD > 0 && mPrice > fPrice) {
+            payback = (mPrice - fPrice) / opD;
+          } else if (opD > 0 && mPrice <= fPrice) {
+            payback = 0;
+          } else {
+            payback = Infinity;
+          }
+          const paybackStr = isFinite(payback) ? payback.toFixed(2) + ' 年' : '无法回收（我方成本更高）';
+          setText('c_payback', paybackStr);
+          setText('c_payback_d', mPrice > fPrice ? fmt(mPrice - fPrice) + ' 元' : '我方更便宜');
+
+          // 结论区
+          const feeClass = feeD >= 0 ? 'positive' : 'negative';
+          const maintClass = maintD >= 0 ? 'positive' : 'negative';
+          const opClass = opD >= 0 ? 'positive' : 'negative';
+          const tcoClass = tcoD >= 0 ? 'positive' : 'negative';
+
+          setText('a_fee', fmt(feeD), feeClass);
+          $('a_fee').className = 'val-cell ' + feeClass;
+          $('a_fee_tag').className = feeD >= 0 ? 'badge badge-ok' : 'badge badge-bad';
+          $('a_fee_tag').textContent = feeD >= 0 ? '✅ 我方优势' : '⚠️ 竞对优势';
+
+          setText('a_maint', fmt(maintD), maintClass);
+          $('a_maint').className = 'val-cell ' + maintClass;
+          $('a_maint_tag').className = maintD >= 0 ? 'badge badge-ok' : 'badge badge-bad';
+          $('a_maint_tag').textContent = maintD >= 0 ? '✅ 我方优势' : '⚠️ 竞对优势';
+
+          setText('a_op', fmt(opD), opClass);
+          $('a_op').className = 'val-cell ' + opClass;
+          $('a_op_tag').className = opD >= 0 ? 'badge badge-ok' : 'badge badge-bad';
+          $('a_op_tag').textContent = opD >= 0 ? '✅ 我方优势' : '⚠️ 竞对优势';
+
+          setText('a_tco', fmt(tcoD), tcoClass);
+          $('a_tco').className = 'val-cell ' + tcoClass;
+          $('a_tco_tag').className = tcoD >= 0 ? 'badge badge-ok' : 'badge badge-bad';
+          $('a_tco_tag').textContent = tcoD >= 0 ? '✅ 我方优势' : '⚠️ 竞对优势';
+
+          setText('a_payback', paybackStr);
+          // 投资回收期判定：<=1.5年=投资回报周期短(绿)，<=3年=中等(橙)，否则=偏长(红)
+          let paybackTagClass, paybackTagText;
+          if (!isFinite(payback)) {
+              paybackTagClass = 'badge badge-bad';
+              paybackTagText = '❌ 无法回收';
+          } else if (payback <= 1.5) {
+              paybackTagClass = 'badge badge-ok';
+              paybackTagText = '✅ 投资回报周期短';
+          } else if (payback <= 3) {
+              paybackTagClass = 'badge badge-neutral';
+              paybackTagText = '⏳ 回报周期中等';
+          } else {
+              paybackTagClass = 'badge badge-bad';
+              paybackTagText = '⚠️ 回报周期偏长';
+          }
+          $('a_payback_tag').className = paybackTagClass;
+          $('a_payback_tag').textContent = paybackTagText;
+
+          // 顶部总览卡片
+          $('sumFee').textContent = fmt(feeD) + ' 元';
+          $('sumFee').style.color = feeD >= 0 ? '#a5d6a7' : '#ef9a9a';
+          $('sumOp').textContent = fmt(opD) + ' 元';
+          $('sumOp').style.color = opD >= 0 ? '#a5d6a7' : '#ef9a9a';
+          $('sumTCO').textContent = fmt(tcoD) + ' 元';
+          $('sumTCO').style.color = tcoD >= 0 ? '#a5d6a7' : '#ef9a9a';
+          $('sumPayback').textContent = isFinite(payback) ? payback.toFixed(2) : '∞';
+          $('sumPayback').style.color = (isFinite(payback) && payback <= 2) ? '#a5d6a7' : '#ffcc80';
+        }
+
+        // ========== 恢复默认 ==========
+        function compareResetAll() {
+          const defaults = {
+            p_demand:20, p_hours:8000, p_price:0.7, p_life:10,
+            f_price:130000, f_airflow:24.02, f_sp:6.1, f_ratedkw:110,
+            f_dryer_type:'定频', f_dryer_kw:5, f_dryer_air:25, f_dryer_load:1,
+            f_dryer2_type:'微热', f_regen_rate:0.07,
+            f_maint_cycle:4000, f_maint_cost:1000, f_consumable_cycle:5,
+            m_price:150000, m_airflow:23.6, m_sp:5.7, m_ratedkw:110,
+            m_dryer_type:'变频', m_dryer_kw:1.5, m_dryer_air:25, m_dryer_load:0.8,
+            m_dryer2_type:'零气耗', m_regen_rate:0.015,
+            m_maint_cycle:4000, m_maint_cost:800, m_consumable_cycle:5
+          };
+          for (const [id, val] of Object.entries(defaults)) {
+            const el = $(id);
+            if (el) el.value = val;
+          }
+          compareRender();
+        }
+
+        // ========== 导出CSV ==========
+        function compareExportCSV() {
+          const lines = [];
+          lines.push('压缩空气系统方案价值对比报告');
+          lines.push('生成时间,' + new Date().toLocaleString('zh-CN'));
+          lines.push('');
+          lines.push('【基础参数】');
+          lines.push('额定气量需求(m³/min),' + num('p_demand'));
+          lines.push('年运行小时(h),' + num('p_hours'));
+          lines.push('工业电价(元/kWh),' + num('p_price'));
+          lines.push('设备使用年限(年),' + num('p_life'));
+          lines.push('');
+          lines.push('【对比结果】');
+          lines.push('维度,竞对,我方,差异');
+          lines.push('初始投资,' + num('f_price') + ',' + num('m_price') + ',' + (num('f_price')-num('m_price')));
+          lines.push('年总电费,' + $('r_f_total_elec_fee').textContent + ',' + $('r_m_total_elec_fee').textContent + ',' + $('c_fee_d').textContent);
+          lines.push('年维保费用,' + $('r_f_total_maint').textContent + ',' + $('r_m_total_maint').textContent + ',' + $('c_maint_d').textContent);
+          lines.push('年总运行成本,' + $('r_f_total_op').textContent + ',' + $('r_m_total_op').textContent + ',' + $('c_op_d').textContent);
+          lines.push('TCO总成本,' + $('r_f_tco').textContent + ',' + $('r_m_tco').textContent + ',' + $('c_tco_d').textContent);
+          lines.push('投资回收期,,' + $('c_payback').textContent);
+          const csv = '\uFEFF' + lines.join('\n');
+          const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = '方案对比报告_' + Date.now() + '.csv';
+          a.click();
+        }
+
+        // ========== 事件绑定（方案对比区） ==========
+        document.querySelectorAll('#compare-estimate input, #compare-estimate select').forEach(inp => {
+          inp.addEventListener('input', compareRender);
+          inp.addEventListener('change', compareRender);
+        });
+
+        // 初始化
+        document.getElementById('calc-var').click();
+        document.getElementById('calc-fix').click();
+        compareRender();
+    </script>
+</body>
+</html>
